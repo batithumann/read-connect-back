@@ -1,7 +1,9 @@
 const express = require("express");
 const cors = require("cors");
 const dotenv = require("dotenv");
-const { getAllBooks, createUser } = require("./service");
+const jwt = require("jsonwebtoken");
+
+const { getAllBooks, createUser, verifyUser } = require("./service");
 
 dotenv.config();
 
@@ -33,6 +35,18 @@ app.post("/new_user", async (req, res) => {
     res.status(200).send(`Usuario ${email} registrado`);
   } catch (error) {
     res.status(error.code || 500).send(error);
+  }
+});
+
+// Login
+app.post("/login", async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    await verifyUser(email, password);
+    const token = jwt.sign({ email: email }, "az_AZ");
+    res.status(200).send(token);
+  } catch (error) {
+    res.status(error.code || 500).send(error.message);
   }
 });
 

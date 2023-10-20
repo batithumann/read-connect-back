@@ -19,9 +19,9 @@ const getAllBooks = async () => {
 const createUser = async (name, email, password) => {
   const queryRevision = "SELECT * FROM users WHERE email = $1";
   const {
-    rows: [usuario],
+    rows: [user],
   } = await pool.query(queryRevision, [email]);
-  if (usuario) {
+  if (user) {
     throw {
       code: 401,
       message: "Ya existe un usuario registrado con ese email",
@@ -34,7 +34,33 @@ const createUser = async (name, email, password) => {
   return result;
 };
 
+const verifyUser = async (email, password) => {
+  const query = "SELECT * FROM users WHERE email = $1";
+  const values = [email];
+
+  const {
+    rows: [user],
+    rowCount,
+  } = await pool.query(query, values);
+  if (!user) {
+    throw {
+      code: 401,
+      message: "Credenciales inválidas",
+    };
+  }
+  const { password_hash: password_hash } = user;
+  const password_correct = bcrypt.compareSync(password, password_hash);
+
+  if (!password_correct || !rowCount) {
+    throw {
+      code: 401,
+      message: "Credenciales inválidas",
+    };
+  }
+};
+
 module.exports = {
   getAllBooks,
   createUser,
+  verifyUser,
 };
