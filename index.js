@@ -1,7 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const dotenv = require("dotenv");
-const { getAllBooks } = require("./service");
+const { getAllBooks, createUser } = require("./service");
 
 dotenv.config();
 
@@ -22,6 +22,17 @@ app.get("/books", async (req, res) => {
     res.status(200).send(books);
   } catch (error) {
     res.status(error.code || 500).send(error.message || "Ocurrió un error");
+  }
+});
+
+// Registrar nuevo usuario
+app.post("/new_user", async (req, res) => {
+  try {
+    const { name, email, password } = req.body;
+    const result = await createUser(name, email, password);
+    res.status(200).send(`Usuario ${email} registrado`);
+  } catch (error) {
+    res.status(error.code || 500).send(error);
   }
 });
 
