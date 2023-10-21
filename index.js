@@ -3,7 +3,7 @@ const cors = require("cors");
 const dotenv = require("dotenv");
 const jwt = require("jsonwebtoken");
 
-const { getAllBooks, createUser, verifyUser } = require("./service");
+const { getBooks, createUser, verifyUser } = require("./service");
 
 dotenv.config();
 
@@ -17,10 +17,22 @@ app.listen(
 app.use(cors());
 app.use(express.json());
 
-// get all books
+// simple book search
 app.get("/books", async (req, res) => {
   try {
-    const books = await getAllBooks();
+    const queryStrings = req.query;
+    const books = await getBooks(queryStrings);
+    res.status(200).send(books);
+  } catch (error) {
+    res.status(error.code || 500).send(error.message || "Ocurrió un error");
+  }
+});
+
+// advanced book search
+app.get("/books/search/advanced", async (req, res) => {
+  try {
+    const queryStrings = req.query;
+    const books = await getBooks(queryStrings, (advanced = true));
     res.status(200).send(books);
   } catch (error) {
     res.status(error.code || 500).send(error.message || "Ocurrió un error");
