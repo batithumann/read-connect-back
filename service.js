@@ -52,12 +52,12 @@ const createNestedObjects = (inputArray) => {
   return outputArray;
 };
 
-const simpleSearch = async ({ search }) => {
+const simpleSearch = async ({ q }) => {
   let filters = [];
-  if (search) {
-    filters.push(`lower(title) like '%${title.toLowerCase()}%'`);
-    filters.push(`lower(a.name) like '%${author.toLowerCase()}%'`);
-    filters.push(`lower(c.name) like '%${category.toLowerCase()}%'`);
+  if (q) {
+    filters.push(`lower(title) like '%${q.toLowerCase()}%'`);
+    filters.push(`lower(a.name) like '%${q.toLowerCase()}%'`);
+    filters.push(`lower(c.name) like '%${q.toLowerCase()}%'`);
   }
   let query = `SELECT b.*, a.name author, c.name category FROM books b 
     LEFT JOIN books_authors ba on b.id = ba.book_id
