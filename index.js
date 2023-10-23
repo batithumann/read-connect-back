@@ -10,6 +10,7 @@ const {
   createUser,
   verifyUser,
   getUser,
+  updateUserName,
   getUserBooks,
 } = require("./service");
 
@@ -102,6 +103,13 @@ app.get("/user", async (req, res) => {
   } catch (error) {
     res.status(error.code || 500).send(error.message || "Ocurrió un error");
   }
+});
+
+app.put("/user/:id", async (req, res) => {
+  const { id } = req.params;
+  const { name } = req.query;
+  await updateUserName(name, id);
+  res.send("Nombre modificado con éxito");
 });
 
 app.get("*", (req, res) => {

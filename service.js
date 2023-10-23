@@ -171,6 +171,12 @@ const getUser = async (email) => {
   return user;
 };
 
+const updateUserName = async (name, id) => {
+  const query = "UPDATE users SET name = $1 WHERE id = $2";
+  const values = [name, id];
+  const result = await pool.query(query, values);
+};
+
 const getUserBooks = async (user_id) => {
   const query =
     "SELECT b.* FROM books b join user_books ub on ub.book_id = b.id WHERE ub.user_id = $1";
@@ -190,5 +196,6 @@ module.exports = {
   createUser,
   verifyUser,
   getUser,
+  updateUserName,
   getUserBooks,
 };
