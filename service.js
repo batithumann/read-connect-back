@@ -189,6 +189,13 @@ const getUserBooks = async (user_id) => {
   return books;
 };
 
+const updateUserBookStatus = async (user_id, book_id, status) => {
+  const query =
+    "UPDATE user_books SET status = $1 WHERE user_id = $2 AND book_id = $3";
+  const values = [status, user_id, book_id];
+  const result = await pool.query(query, values);
+};
+
 module.exports = {
   simpleSearch,
   advancedSearch,
@@ -198,4 +205,5 @@ module.exports = {
   getUser,
   updateUserName,
   getUserBooks,
+  updateUserBookStatus,
 };

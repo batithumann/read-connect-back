@@ -12,6 +12,7 @@ const {
   getUser,
   updateUserName,
   getUserBooks,
+  updateUserBookStatus,
 } = require("./service");
 
 dotenv.config();
@@ -110,6 +111,13 @@ app.put("/user/:id", async (req, res) => {
   const { name } = req.query;
   await updateUserName(name, id);
   res.send("Nombre modificado con éxito");
+});
+
+app.put("/user/:user_id/book/:book_id", async (req, res) => {
+  const { user_id, book_id } = req.params;
+  const { status } = req.query;
+  await updateUserBookStatus(user_id, book_id, status);
+  res.send("Estado modificado con éxito");
 });
 
 app.get("*", (req, res) => {
