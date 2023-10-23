@@ -105,6 +105,17 @@ const advancedSearch = async ({
   return createNestedObjects(books);
 };
 
+const getBookById = async (book_id) => {
+  const query = "SELECT * FROM books WHERE id = $1";
+  const {
+    rowCount,
+    rows: [book],
+  } = await pool.query(query, [book_id]);
+  if (!rowCount)
+    throw { code: 404, message: "No se encontró ningún libro con este ID" };
+  return book;
+};
+
 const createUser = async (name, email, password) => {
   const queryRevision = "SELECT * FROM users WHERE email = $1";
   const {
@@ -148,9 +159,36 @@ const verifyUser = async (email, password) => {
   }
 };
 
+const getUser = async (email) => {
+  const query = "SELECT id, name, email FROM users WHERE email = $1";
+  const values = [email];
+  const {
+    rowCount,
+    rows: [user],
+  } = await pool.query(query, values);
+  if (!rowCount)
+    throw { code: 404, message: "No se encontró ningún usuario con este ID" };
+  return user;
+};
+
+const getUserBooks = async (user_id) => {
+  const query =
+    "SELECT b.* FROM books b join user_books ub on ub.book_id = b.id WHERE ub.user_id = $1";
+  const values = [user_id];
+  const {
+    rowCount,
+    rows: [books],
+  } = await pool.query(query, values);
+  if (!rowCount) return [];
+  return books;
+};
+
 module.exports = {
   simpleSearch,
   advancedSearch,
+  getBookById,
   createUser,
   verifyUser,
+  getUser,
+  getUserBooks,
 };

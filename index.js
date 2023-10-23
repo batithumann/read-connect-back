@@ -6,8 +6,11 @@ const jwt = require("jsonwebtoken");
 const {
   simpleSearch,
   advancedSearch,
+  getBookById,
   createUser,
   verifyUser,
+  getUser,
+  getUserBooks,
 } = require("./service");
 
 dotenv.config();
@@ -33,6 +36,16 @@ app.get("/books", async (req, res) => {
   }
 });
 
+app.get("/books/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const book = await getBookById(id);
+    res.status(200).send(book);
+  } catch (error) {
+    res.status(error.code || 500).send(error.message || "Ocurrió un error");
+  }
+});
+
 // advanced book search
 app.get("/books/search", async (req, res) => {
   try {
@@ -44,8 +57,8 @@ app.get("/books/search", async (req, res) => {
   }
 });
 
-// Registrar nuevo usuario
-app.post("/new_user", async (req, res) => {
+// sign up
+app.post("/signup", async (req, res) => {
   try {
     const { name, email, password } = req.body;
     const result = await createUser(name, email, password);
@@ -64,6 +77,30 @@ app.post("/login", async (req, res) => {
     res.status(200).send(token);
   } catch (error) {
     res.status(error.code || 500).send(error.message);
+  }
+});
+
+// get user info
+app.get("/user", async (req, res) => {
+  try {
+    const auth = req.header("Authorization");
+    if (!auth) {
+      res.status(401).send("Credenciales inválidas");
+      return;
+    }
+    const token = auth.split("Bearer ")[1];
+    jwt.verify(token, "az_AZ");
+    const { email } = jwt.decode(token);
+    const user = await getUser(email);
+    if (user) {
+      const user_books = await getUserBooks(user.id);
+      console.log({ ...user, user_books: user_books });
+      res.status(200).send({ ...user, user_books: user_books });
+    } else {
+      res.status(401).send("Credenciales inválidas");
+    }
+  } catch (error) {
+    res.status(error.code || 500).send(error.message || "Ocurrió un error");
   }
 });
 
