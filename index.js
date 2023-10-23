@@ -11,6 +11,7 @@ const {
   verifyUser,
   getUser,
   updateUserName,
+  deleteUser,
   getUserBooks,
   updateUserBookStatus,
 } = require("./service");
@@ -118,6 +119,12 @@ app.put("/user/:user_id/book/:book_id", async (req, res) => {
   const { status } = req.query;
   await updateUserBookStatus(user_id, book_id, status);
   res.send("Estado modificado con éxito");
+});
+
+app.delete("/user/:id", async (req, res) => {
+  const { id } = req.params;
+  res.send("Usuario eliminado con éxito");
+  await deleteUser(id);
 });
 
 app.get("*", (req, res) => {

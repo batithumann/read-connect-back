@@ -177,6 +177,12 @@ const updateUserName = async (name, id) => {
   const result = await pool.query(query, values);
 };
 
+const deleteUser = async (id) => {
+  const query = "DELETE FROM users WHERE id = $1";
+  const values = [id];
+  const result = await pool.query(query, values);
+};
+
 const getUserBooks = async (user_id) => {
   const query =
     "SELECT b.* FROM books b join user_books ub on ub.book_id = b.id WHERE ub.user_id = $1";
@@ -204,6 +210,7 @@ module.exports = {
   verifyUser,
   getUser,
   updateUserName,
+  deleteUser,
   getUserBooks,
   updateUserBookStatus,
 };
