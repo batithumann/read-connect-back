@@ -77,7 +77,7 @@ const advancedSearch = async ({
   title,
   author,
   category,
-  pagetMin,
+  pageMin,
   pageMax,
   dateMin,
   dateMax,
@@ -87,7 +87,7 @@ const advancedSearch = async ({
   if (author) filters.push(`lower(a.name) like '%${author.toLowerCase()}%'`);
   if (category)
     filters.push(`lower(c.name) like '%${category.toLowerCase()}%'`);
-  if (pagetMin) filters.push(`page_count >= ${pagetMin}`);
+  if (pageMin) filters.push(`page_count >= ${pageMin}`);
   if (pageMax) filters.push(`page_count <= ${pageMax}`);
   if (dateMin) filters.push(`published_date >= '${dateMin}'`);
   if (dateMax) filters.push(`published_date <= '${dateMax}'`);
@@ -100,6 +100,7 @@ const advancedSearch = async ({
     filters = filters.join(" AND ");
     query += ` WHERE ${filters}`;
   }
+  console.log(query);
   const { rowCount, rows: books } = await pool.query(query);
 
   return createNestedObjects(books);
