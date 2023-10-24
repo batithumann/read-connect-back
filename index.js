@@ -13,6 +13,7 @@ const {
   updateUserName,
   deleteUser,
   getUserBooks,
+  getNumberOfPages,
   updateUserBookStatus,
 } = require("./service");
 
@@ -50,7 +51,7 @@ app.get("/books/:id", async (req, res) => {
 });
 
 // advanced book search
-app.get("/books/search", async (req, res) => {
+app.get("/search", async (req, res) => {
   try {
     const queryStrings = req.query;
     const books = await advancedSearch(queryStrings);
@@ -97,7 +98,6 @@ app.get("/user", async (req, res) => {
     const user = await getUser(email);
     if (user) {
       const user_books = await getUserBooks(user.id);
-      console.log({ ...user, user_books: user_books });
       res.status(200).send({ ...user, user_books: user_books });
     } else {
       res.status(401).send("Credenciales inválidas");
@@ -108,23 +108,44 @@ app.get("/user", async (req, res) => {
 });
 
 app.put("/user/:id", async (req, res) => {
-  const { id } = req.params;
-  const { name } = req.query;
-  await updateUserName(name, id);
-  res.send("Nombre modificado con éxito");
+  try {
+    const { id } = req.params;
+    const { name } = req.query;
+    await updateUserName(name, id);
+    res.send("Nombre modificado con éxito");
+  } catch (error) {
+    res.status(error.code || 500).send(error.message || "Ocurrió un error");
+  }
 });
 
 app.put("/user/:user_id/book/:book_id", async (req, res) => {
-  const { user_id, book_id } = req.params;
-  const { status } = req.query;
-  await updateUserBookStatus(user_id, book_id, status);
-  res.send("Estado modificado con éxito");
+  try {
+    const { user_id, book_id } = req.params;
+    const { status } = req.query;
+    await updateUserBookStatus(user_id, book_id, status);
+    res.send("Estado modificado con éxito");
+  } catch (error) {
+    res.status(error.code || 500).send(error.message || "Ocurrió un error");
+  }
 });
 
 app.delete("/user/:id", async (req, res) => {
-  const { id } = req.params;
-  res.send("Usuario eliminado con éxito");
-  await deleteUser(id);
+  try {
+    const { id } = req.params;
+    res.send("Usuario eliminado con éxito");
+    await deleteUser(id);
+  } catch (error) {
+    res.status(error.code || 500).send(error.message || "Ocurrió un error");
+  }
+});
+
+app.get("/number_of_pages", async (req, res) => {
+  try {
+    const numPages = await getNumberOfPages();
+    res.status(200).send(numPages);
+  } catch (error) {
+    res.status(error.code || 500).send(error.message || "Ocurrió un error");
+  }
 });
 
 app.get("*", (req, res) => {

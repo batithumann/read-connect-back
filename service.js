@@ -52,12 +52,12 @@ const createNestedObjects = (inputArray) => {
   return outputArray;
 };
 
-const simpleSearch = async ({ q }) => {
+const simpleSearch = async ({ search }) => {
   let filters = [];
-  if (q) {
-    filters.push(`lower(title) like '%${q.toLowerCase()}%'`);
-    filters.push(`lower(a.name) like '%${q.toLowerCase()}%'`);
-    filters.push(`lower(c.name) like '%${q.toLowerCase()}%'`);
+  if (search) {
+    filters.push(`lower(title) like '%${search.toLowerCase()}%'`);
+    filters.push(`lower(a.name) like '%${search.toLowerCase()}%'`);
+    filters.push(`lower(c.name) like '%${search.toLowerCase()}%'`);
   }
   let query = `SELECT b.*, a.name author, c.name category FROM books b 
     LEFT JOIN books_authors ba on b.id = ba.book_id
@@ -77,20 +77,20 @@ const advancedSearch = async ({
   title,
   author,
   category,
-  pageCountMin,
-  pageCountMax,
-  publishDateMin,
-  publishDateMax,
+  pagetMin,
+  pageMax,
+  dateMin,
+  dateMax,
 }) => {
   let filters = [];
   if (title) filters.push(`lower(title) like '%${title.toLowerCase()}%'`);
   if (author) filters.push(`lower(a.name) like '%${author.toLowerCase()}%'`);
   if (category)
     filters.push(`lower(c.name) like '%${category.toLowerCase()}%'`);
-  if (pageCountMin) filters.push(`page_count >= ${pageCountMin}`);
-  if (pageCountMax) filters.push(`page_count <= ${pageCountMax}`);
-  if (publishDateMin) filters.push(`published_date >= '${publishDateMin}'`);
-  if (publishDateMax) filters.push(`published_date <= '${publishDateMax}'`);
+  if (pagetMin) filters.push(`page_count >= ${pagetMin}`);
+  if (pageMax) filters.push(`page_count <= ${pageMax}`);
+  if (dateMin) filters.push(`published_date >= '${dateMin}'`);
+  if (dateMax) filters.push(`published_date <= '${dateMax}'`);
   let query = `SELECT b.*, a.name author, c.name category FROM books b 
     LEFT JOIN books_authors ba on b.id = ba.book_id
     LEFT JOIN authors a on a.id = ba.author_id
@@ -137,7 +137,6 @@ const createUser = async (name, email, password) => {
 const verifyUser = async (email, password) => {
   const query = "SELECT * FROM users WHERE email = $1";
   const values = [email];
-
   const {
     rows: [user],
     rowCount,
@@ -187,10 +186,7 @@ const getUserBooks = async (user_id) => {
   const query =
     "SELECT b.* FROM books b join user_books ub on ub.book_id = b.id WHERE ub.user_id = $1";
   const values = [user_id];
-  const {
-    rowCount,
-    rows: [books],
-  } = await pool.query(query, values);
+  const { rowCount, rows: books } = await pool.query(query, values);
   if (!rowCount) return [];
   return books;
 };
@@ -200,6 +196,12 @@ const updateUserBookStatus = async (user_id, book_id, status) => {
     "UPDATE user_books SET status = $1 WHERE user_id = $2 AND book_id = $3";
   const values = [status, user_id, book_id];
   const result = await pool.query(query, values);
+};
+
+const getNumberOfPages = async () => {
+  const query = "select min(page_count), max(page_count) from books;";
+  const { rows: result } = await pool.query(query);
+  return result[0];
 };
 
 module.exports = {
@@ -212,5 +214,6 @@ module.exports = {
   updateUserName,
   deleteUser,
   getUserBooks,
+  getNumberOfPages,
   updateUserBookStatus,
 };
