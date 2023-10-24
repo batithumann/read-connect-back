@@ -12,6 +12,7 @@ const pool = new Pool({
 
 const createNestedObjects = (inputArray) => {
   const outputArray = [];
+  console.log(inputArray);
 
   inputArray.forEach((item) => {
     const existingItem = outputArray.find(
@@ -19,19 +20,21 @@ const createNestedObjects = (inputArray) => {
     );
 
     if (existingItem) {
-      existingItem.author = Array.isArray(existingItem.author)
-        ? existingItem.author
-        : [existingItem.author];
-      existingItem.category = Array.isArray(existingItem.category)
-        ? existingItem.category
-        : [existingItem.category];
-
-      if (!existingItem.author.includes(item.author)) {
-        existingItem.author.push(item.author);
+      if (
+        !existingItem.authors.find((author) => item.author_id === author.id)
+      ) {
+        existingItem.authors.push({ id: item.author_id, name: item.author });
       }
 
-      if (!existingItem.category.includes(item.category)) {
-        existingItem.category.push(item.category);
+      if (
+        !existingItem.categories.find(
+          (category) => item.category_id === category.id
+        )
+      ) {
+        existingItem.categories.push({
+          id: item.category_id,
+          name: item.category,
+        });
       }
     } else {
       outputArray.push({
@@ -43,8 +46,13 @@ const createNestedObjects = (inputArray) => {
         thumbnail_url: item.thumbnail_url,
         short_description: item.short_description,
         long_description: item.long_description,
-        author: item.author,
-        category: item.category,
+        authors: [{ id: item.author_id, name: item.author }],
+        categories: [
+          {
+            id: item.category_id,
+            name: item.category,
+          },
+        ],
       });
     }
   });
@@ -59,7 +67,7 @@ const simpleSearch = async ({ search }) => {
     filters.push(`lower(a.name) like '%${search.toLowerCase()}%'`);
     filters.push(`lower(c.name) like '%${search.toLowerCase()}%'`);
   }
-  let query = `SELECT b.*, a.name author, c.name category FROM books b 
+  let query = `SELECT b.*, a.id author_id, a.name author, c.id category_id, c.name category FROM books b 
     LEFT JOIN books_authors ba on b.id = ba.book_id
     LEFT JOIN authors a on a.id = ba.author_id
     LEFT JOIN books_categories bc on b.id = bc.book_id
@@ -91,7 +99,7 @@ const advancedSearch = async ({
   if (pageMax) filters.push(`page_count <= ${pageMax}`);
   if (dateMin) filters.push(`published_date >= '${dateMin}'`);
   if (dateMax) filters.push(`published_date <= '${dateMax}'`);
-  let query = `SELECT b.*, a.name author, c.name category FROM books b 
+  let query = `SELECT b.*, a.id author_id, a.name author, c.id category_id, c.name category FROM books b 
     LEFT JOIN books_authors ba on b.id = ba.book_id
     LEFT JOIN authors a on a.id = ba.author_id
     LEFT JOIN books_categories bc on b.id = bc.book_id
