@@ -100,7 +100,6 @@ const advancedSearch = async ({
     filters = filters.join(" AND ");
     query += ` WHERE ${filters}`;
   }
-  console.log(query);
   const { rowCount, rows: books } = await pool.query(query);
 
   return createNestedObjects(books);
@@ -205,6 +204,12 @@ const getNumberOfPages = async () => {
   return result[0];
 };
 
+const followUser = async (user_id, followed_id) => {
+  const query = "INSERT INTO user_follows values ($1, $2)";
+  const values = [user_id, followed_id];
+  const result = await pool.query(query, values);
+};
+
 module.exports = {
   simpleSearch,
   advancedSearch,
@@ -217,4 +222,5 @@ module.exports = {
   getUserBooks,
   getNumberOfPages,
   updateUserBookStatus,
+  followUser,
 };

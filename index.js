@@ -15,6 +15,7 @@ const {
   getUserBooks,
   getNumberOfPages,
   updateUserBookStatus,
+  followUser,
 } = require("./service");
 
 dotenv.config();
@@ -107,12 +108,36 @@ app.get("/user", async (req, res) => {
   }
 });
 
+// follow user
+app.post("/follow/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const auth = req.header("Authorization");
+    if (!auth) {
+      res.status(401).send("Credenciales inválidas");
+      return;
+    }
+    const token = auth.split("Bearer ")[1];
+    jwt.verify(token, "az_AZ");
+    const { email } = jwt.decode(token);
+    const user = await getUser(email);
+    if (user) {
+      await followUser(user.id, id);
+      res.status(200).send("Siguiendo usuario");
+    } else {
+      res.status(401).send("Credenciales inválidas");
+    }
+  } catch (error) {
+    res.status(error.code || 500).send(error.message || "Ocurrió un error");
+  }
+});
+
 app.put("/user/:id", async (req, res) => {
   try {
     const { id } = req.params;
     const { name } = req.query;
     await updateUserName(name, id);
-    res.send("Nombre modificado con éxito");
+    res.status(200).send("Nombre modificado con éxito");
   } catch (error) {
     res.status(error.code || 500).send(error.message || "Ocurrió un error");
   }
@@ -123,7 +148,7 @@ app.put("/user/:user_id/book/:book_id", async (req, res) => {
     const { user_id, book_id } = req.params;
     const { status } = req.query;
     await updateUserBookStatus(user_id, book_id, status);
-    res.send("Estado modificado con éxito");
+    res.status(200).send("Estado modificado con éxito");
   } catch (error) {
     res.status(error.code || 500).send(error.message || "Ocurrió un error");
   }
@@ -132,7 +157,7 @@ app.put("/user/:user_id/book/:book_id", async (req, res) => {
 app.delete("/user/:id", async (req, res) => {
   try {
     const { id } = req.params;
-    res.send("Usuario eliminado con éxito");
+    res.status(200).send("Usuario eliminado con éxito");
     await deleteUser(id);
   } catch (error) {
     res.status(error.code || 500).send(error.message || "Ocurrió un error");
