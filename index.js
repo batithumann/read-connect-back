@@ -37,7 +37,7 @@ app.get("/books", async (req, res) => {
     const books = await simpleSearch(queryStrings);
     res.status(200).send(books);
   } catch (error) {
-    res.status(error.code || 500).send(error.message || "Ocurrió un error");
+    res.status(error.code || 500).send(error);
   }
 });
 
@@ -47,7 +47,7 @@ app.get("/books/:id", async (req, res) => {
     const book = await getBookById(id);
     res.status(200).send(book);
   } catch (error) {
-    res.status(error.code || 500).send(error.message || "Ocurrió un error");
+    res.status(error.code || 500).send(error);
   }
 });
 
@@ -58,7 +58,7 @@ app.get("/search", async (req, res) => {
     const books = await advancedSearch(queryStrings);
     res.status(200).send(books);
   } catch (error) {
-    res.status(error.code || 500).send(error.message || "Ocurrió un error");
+    res.status(error.code || 500).send(error);
   }
 });
 
@@ -81,7 +81,7 @@ app.post("/login", async (req, res) => {
     const token = jwt.sign({ email: email }, "az_AZ");
     res.status(200).send(token);
   } catch (error) {
-    res.status(error.code || 500).send(error.message);
+    res.status(error.code || 500).send(error);
   }
 });
 
@@ -90,7 +90,7 @@ app.get("/user", async (req, res) => {
   try {
     const auth = req.header("Authorization");
     if (!auth) {
-      res.status(401).send("Credenciales inválidas");
+      res.status(401).send({ message: "Credenciales inválidas" });
       return;
     }
     const token = auth.split("Bearer ")[1];
@@ -101,10 +101,10 @@ app.get("/user", async (req, res) => {
       const user_books = await getUserBooks(user.id);
       res.status(200).send({ ...user, user_books: user_books });
     } else {
-      res.status(401).send("Credenciales inválidas");
+      res.status(401).send({ message: "Credenciales inválidas" });
     }
   } catch (error) {
-    res.status(error.code || 500).send(error.message || "Ocurrió un error");
+    res.status(error.code || 500).send(error);
   }
 });
 
@@ -128,7 +128,7 @@ app.post("/follow/:id", async (req, res) => {
       res.status(401).send("Credenciales inválidas");
     }
   } catch (error) {
-    res.status(error.code || 500).send(error.message || "Ocurrió un error");
+    res.status(error.code || 500).send(error);
   }
 });
 
@@ -139,7 +139,7 @@ app.put("/user/:id", async (req, res) => {
     await updateUserName(name, id);
     res.status(200).send("Nombre modificado con éxito");
   } catch (error) {
-    res.status(error.code || 500).send(error.message || "Ocurrió un error");
+    res.status(error.code || 500).send(error);
   }
 });
 
@@ -150,7 +150,7 @@ app.put("/user/:user_id/book/:book_id", async (req, res) => {
     await updateUserBookStatus(user_id, book_id, status);
     res.status(200).send("Estado modificado con éxito");
   } catch (error) {
-    res.status(error.code || 500).send(error.message || "Ocurrió un error");
+    res.status(error.code || 500).send(error);
   }
 });
 
@@ -160,7 +160,7 @@ app.delete("/user/:id", async (req, res) => {
     res.status(200).send("Usuario eliminado con éxito");
     await deleteUser(id);
   } catch (error) {
-    res.status(error.code || 500).send(error.message || "Ocurrió un error");
+    res.status(error.code || 500).send(error);
   }
 });
 
@@ -169,7 +169,7 @@ app.get("/number_of_pages", async (req, res) => {
     const numPages = await getNumberOfPages();
     res.status(200).send(numPages);
   } catch (error) {
-    res.status(error.code || 500).send(error.message || "Ocurrió un error");
+    res.status(error.code || 500).send(error);
   }
 });
 
