@@ -12,7 +12,6 @@ const pool = new Pool({
 
 const createNestedObjects = (inputArray) => {
   const outputArray = [];
-  console.log(inputArray);
 
   inputArray.forEach((item) => {
     const existingItem = outputArray.find(
@@ -114,14 +113,16 @@ const advancedSearch = async ({
 };
 
 const getBookById = async (book_id) => {
-  const query = "SELECT * FROM books WHERE id = $1";
-  const {
-    rowCount,
-    rows: [book],
-  } = await pool.query(query, [book_id]);
+  const query = `SELECT b.*, a.id author_id, a.name author, c.id category_id, c.name category FROM books b 
+  LEFT JOIN books_authors ba on b.id = ba.book_id
+  LEFT JOIN authors a on a.id = ba.author_id
+  LEFT JOIN books_categories bc on b.id = bc.book_id
+  LEFT JOIN categories c on c.id = bc.category_id
+  where b.id = $1`;
+  const { rowCount, rows: book } = await pool.query(query, [book_id]);
   if (!rowCount)
     throw { code: 404, message: "No se encontró ningún libro con este ID" };
-  return book;
+  return createNestedObjects(book);
 };
 
 const createUser = async (name, email, password) => {
@@ -199,17 +200,33 @@ const getUserBooks = async (user_id) => {
   return books;
 };
 
-const updateUserBookStatus = async (user_id, book_id, status) => {
-  const query =
-    "UPDATE user_books SET status = $1 WHERE user_id = $2 AND book_id = $3";
-  const values = [status, user_id, book_id];
-  const result = await pool.query(query, values);
-};
-
 const getNumberOfPages = async () => {
   const query = "select min(page_count), max(page_count) from books;";
-  const { rows: result } = await pool.query(query);
-  return result[0];
+  const {
+    rows: [result],
+  } = await pool.query(query);
+  return result;
+};
+
+const addUserBookStatus = async (user_id, book_id, status) => {
+  const query1 =
+    "UPDATE user_books SET status=$1 WHERE user_id=$2 and book_id = $3";
+  const query2 = `INSERT INTO user_books
+         SELECT $2, $3, $1, null, null
+         WHERE NOT EXISTS (SELECT 1 FROM user_books WHERE user_id=$2 and book_id = $3);`;
+  const values = [status, user_id, book_id];
+  const result1 = await pool.query(query1, values);
+  const result2 = await pool.query(query2, values);
+};
+
+const getUserBookStatus = async (user_id, book_id) => {
+  const query = "SELECT * FROM user_books WHERE user_id=$1 and book_id=$2";
+  const values = [user_id, book_id];
+  const {
+    rowCount,
+    rows: [result],
+  } = await pool.query(query, values);
+  return result;
 };
 
 const followUser = async (user_id, followed_id) => {
@@ -229,6 +246,7 @@ module.exports = {
   deleteUser,
   getUserBooks,
   getNumberOfPages,
-  updateUserBookStatus,
+  getUserBookStatus,
   followUser,
+  addUserBookStatus,
 };

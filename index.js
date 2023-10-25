@@ -14,8 +14,9 @@ const {
   deleteUser,
   getUserBooks,
   getNumberOfPages,
-  updateUserBookStatus,
   followUser,
+  getUserBookStatus,
+  addUserBookStatus,
 } = require("./service");
 
 dotenv.config();
@@ -143,12 +144,47 @@ app.put("/user/:id", async (req, res) => {
   }
 });
 
-app.put("/user/:user_id/book/:book_id", async (req, res) => {
+app.post("/add_user_book_status", async (req, res) => {
   try {
-    const { user_id, book_id } = req.params;
-    const { status } = req.query;
-    await updateUserBookStatus(user_id, book_id, status);
-    res.status(200).send("Estado modificado con éxito");
+    const { book_id, status } = req.body;
+    const auth = req.header("Authorization");
+    if (!auth) {
+      res.status(401).send("Credenciales inválidas");
+      return;
+    }
+    const token = auth.split("Bearer ")[1];
+    jwt.verify(token, "az_AZ");
+    const { email } = jwt.decode(token);
+    const user = await getUser(email);
+    if (user) {
+      await addUserBookStatus(user.id, book_id, status);
+      res.status(200).send("Estado actualizado");
+    } else {
+      res.status(401).send("Credenciales inválidas");
+    }
+  } catch (error) {
+    res.status(error.code || 500).send(error);
+  }
+});
+
+app.get("/book_status/:book_id", async (req, res) => {
+  try {
+    const { book_id } = req.params;
+    const auth = req.header("Authorization");
+    if (!auth) {
+      res.status(401).send({ message: "Credenciales inválidas" });
+      return;
+    }
+    const token = auth.split("Bearer ")[1];
+    jwt.verify(token, "az_AZ");
+    const { email } = jwt.decode(token);
+    const user = await getUser(email);
+    if (user) {
+      const book_status = await getUserBookStatus(user.id, book_id);
+      res.status(200).send(book_status);
+    } else {
+      res.status(401).send({ message: "Credenciales inválidas" });
+    }
   } catch (error) {
     res.status(error.code || 500).send(error);
   }
