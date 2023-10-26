@@ -193,7 +193,7 @@ const deleteUser = async (id) => {
 
 const getUserBooks = async (user_id) => {
   const query =
-    "SELECT b.* FROM books b join user_books ub on ub.book_id = b.id WHERE ub.user_id = $1";
+    "SELECT b.*, ub.status user_status FROM books b join user_books ub on ub.book_id = b.id WHERE ub.user_id = $1";
   const values = [user_id];
   const { rowCount, rows: books } = await pool.query(query, values);
   if (!rowCount) return [];
