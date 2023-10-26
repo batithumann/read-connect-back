@@ -17,6 +17,7 @@ const {
   followUser,
   getUserBookStatus,
   addUserBookStatus,
+  updateUser,
 } = require("./service");
 
 dotenv.config();
@@ -69,6 +70,26 @@ app.post("/signup", async (req, res) => {
     const { name, email, password } = req.body;
     const result = await createUser(name, email, password);
     res.status(200).send(`Usuario ${email} registrado`);
+  } catch (error) {
+    res.status(error.code || 500).send(error);
+  }
+});
+
+// sign up
+app.put("/update", async (req, res) => {
+  try {
+    const auth = req.header("Authorization");
+    if (!auth) {
+      res.status(401).send({ message: "Credenciales inválidas" });
+      return;
+    }
+    const token = auth.split("Bearer ")[1];
+    jwt.verify(token, "az_AZ");
+    const { email } = jwt.decode(token);
+    const user = await getUser(email);
+    const { name, email: newEmail, password } = req.body;
+    const result = await updateUser(name, newEmail, password, user.id);
+    res.status(200).send(`Usuario ${email} actualizado`);
   } catch (error) {
     res.status(error.code || 500).send(error);
   }

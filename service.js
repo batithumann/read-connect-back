@@ -229,6 +229,18 @@ const getUserBookStatus = async (user_id, book_id) => {
   return result;
 };
 
+const updateUser = async (name, email, password, user_id) => {
+  const hashedPassword = bcrypt.hashSync(password);
+  const query =
+    "UPDATE users SET name=$1, email=$2, password_hash=$3 WHERE id = $4";
+  const values = [name, email, hashedPassword, user_id];
+  const {
+    rowCount,
+    rows: [result],
+  } = await pool.query(query, values);
+  return result;
+};
+
 const followUser = async (user_id, followed_id) => {
   const query = "INSERT INTO user_follows values ($1, $2)";
   const values = [user_id, followed_id];
@@ -249,4 +261,5 @@ module.exports = {
   getUserBookStatus,
   followUser,
   addUserBookStatus,
+  updateUser,
 };
